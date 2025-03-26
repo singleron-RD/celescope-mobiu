@@ -2,6 +2,7 @@ STEPS = [
     "sample",
     "convert",
     "starsolo",
+    "kb_python",
     "cells",
     "analysis",
 ]

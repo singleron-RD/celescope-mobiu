@@ -15,6 +15,11 @@
     {% include "html/rna/count.html" %}
     {% endif %}
 
+    {% if kb_python_summary is defined%}
+    {% set step_summary = kb_python_summary %}
+    {% include "html/utils/step.html" %}
+    {% endif %}
+
     {% if analysis_summary is defined %}
     {% set step_summary = analysis_summary %}
     {% include "html/rna/analysis.html"%}

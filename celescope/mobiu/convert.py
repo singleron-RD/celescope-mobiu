@@ -96,7 +96,7 @@ def get_opts_convert(parser, sub_program=True):
         "--chemistry",
         required=True,
         choices=["mobiu-1", "mobiu-2", "mobiu-3"],
-        help="rna 5p3p chemistry version",
+        help="chemistry version",
     )
     if sub_program:
         parser.add_argument(

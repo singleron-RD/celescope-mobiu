@@ -1,6 +1,7 @@
 import gzip
 import os
 from collections import defaultdict
+import sys
 
 import scipy.io
 import scipy.sparse
@@ -209,7 +210,12 @@ class CountMatrix:
         Returns:
             CountMatrix object
         """
-        barcodes_indices = [self.__barcodes.index(barcode) for barcode in bcs]
+        intersect = set(bcs).intersection(set(self.__barcodes))
+        if len(intersect) != len(bcs):
+            sys.stderr.write(
+                f"WARNING: {len(bcs) - len(intersect)} barcodes not in matrix\n"
+            )
+        barcodes_indices = [self.__barcodes.index(barcode) for barcode in intersect]
         barcodes_indices.sort()
         return self.slice_matrix(barcodes_indices)
 

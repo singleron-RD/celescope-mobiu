@@ -32,7 +32,7 @@ class Convert(Step):
         for i, (fn1, fn2) in enumerate(zip(self.fq1_3p, self.fq2_3p), start=1):
             out_fn1 = f"{self.out_prefix}_3p{i}_R1.fq.gz"
             out_fn2 = f"{self.out_prefix}_3p{i}_R2.fq.gz"
-            fh_3p = utils.generic_open(out_fn1, "wt")
+            fh_3p = utils.generic_open(out_fn1, "wt", compresslevel=1)
             with pysam.FastxFile(fn1, persist=False) as fq:
                 for entry1 in fq:
                     name1, seq1, qual1 = entry1.name, entry1.sequence, entry1.quality
@@ -53,8 +53,8 @@ class Convert(Step):
         for i, (fn1, fn2) in enumerate(zip(self.fq1_5p, self.fq2_5p), start=1):
             out_fn1 = f"{self.out_prefix}_5p{i}_R1.fq.gz"
             out_fn2 = f"{self.out_prefix}_5p{i}_R2.fq.gz"
-            fh_5p_1 = utils.generic_open(out_fn1, "wt")
-            fh_5p_2 = utils.generic_open(out_fn2, "wt")
+            fh_5p_1 = utils.generic_open(out_fn1, "wt", compresslevel=1)
+            fh_5p_2 = utils.generic_open(out_fn2, "wt", compresslevel=1)
             with pysam.FastxFile(fn1, persist=False) as fq:
                 for entry1 in fq:
                     name1, seq1, qual1 = entry1.name, entry1.sequence, entry1.quality
@@ -94,7 +94,7 @@ def convert(args):
 def get_opts_convert(parser, sub_program=True):
     parser.add_argument(
         "--chemistry",
-        required=True,
+        default="mobiu-1",
         choices=["mobiu-1", "mobiu-2", "mobiu-3"],
         help="chemistry version",
     )

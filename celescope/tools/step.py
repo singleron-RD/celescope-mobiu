@@ -55,7 +55,7 @@ class Step:
         display_title controls the section title in HTML report
         force thread <=20
         """
-        sys.stderr.write(f"CeleScope version: {__version__} ")
+        sys.stderr.write(f"version: {__version__} ")
         sys.stderr.write(f"Args: {args}\n")
         self.args = args
         self.outdir = args.outdir

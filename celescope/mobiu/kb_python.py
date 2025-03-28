@@ -115,7 +115,7 @@ class Kb_python(Step):
 
     @utils.add_log
     def run(self):
-        # self.run_kb()
+        self.run_kb()
         self.get_raw_matrix()
         self.get_filtered_matrix()
 
@@ -134,7 +134,7 @@ def get_opts_kb_python(parser, sub_program):
     )
     parser.add_argument(
         "--chemistry",
-        required=True,
+        default="mobiu-1",
         choices=["mobiu-1", "mobiu-2", "mobiu-3"],
         help="chemistry version",
     )

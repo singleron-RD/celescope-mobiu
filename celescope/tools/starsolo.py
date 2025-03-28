@@ -9,7 +9,6 @@ from scipy import interpolate
 import numpy as np
 import math
 import celescope.tools.parse_chemistry as parse_chemistry
-from celescope.chemistry_dict import chemistry_dict
 from typing import Union
 from celescope.tools.__init__ import (
     FILTERED_MATRIX_DIR_SUFFIX,
@@ -591,9 +590,9 @@ class Demultiplexing(Step):
 def get_opts_starsolo(parser, sub_program=True):
     parser.add_argument(
         "--chemistry",
-        help=HELP_DICT["chemistry"],
-        choices=list(chemistry_dict.keys()),
-        default="auto",
+        default="mobiu-1",
+        choices=["mobiu-1", "mobiu-2", "mobiu-3"],
+        help="chemistry version",
     )
     parser.add_argument(
         "--pattern",

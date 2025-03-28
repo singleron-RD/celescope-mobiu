@@ -1,6 +1,5 @@
 from celescope.tools import utils
 from celescope.__init__ import __VERSION__
-from celescope.chemistry_dict import chemistry_dict
 
 from celescope.tools.step import Step, s_common
 
@@ -47,8 +46,8 @@ def get_opts_sample(parser, sub_program):
         parser.add_argument("--fq1", help="read1 fq file")
     parser.add_argument(
         "--chemistry",
-        choices=list(chemistry_dict.keys()),
+        default="mobiu-1",
+        choices=["mobiu-1", "mobiu-2", "mobiu-3"],
         help="chemistry version",
-        default="auto",
     )
     return parser

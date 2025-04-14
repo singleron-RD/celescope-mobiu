@@ -22,7 +22,7 @@ setuptools.setup(
     version=__VERSION__,
     author="zhouyiqi",
     author_email="zhouyiqi@singleronbio.com",
-    description="Single Cell Analysis Pipelines",
+    description="MobiuSCOPE Analysis Pipelines",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/singleron-RD/celescope-mobiu",

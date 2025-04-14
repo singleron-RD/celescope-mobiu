@@ -83,7 +83,7 @@ class Multi_mobiu(Multi):
         cmd = (
             f"{cmd_line} "
             f"--fq1 {fq1_str} --fq2 {fq2_str} "
-            f"--gene_filtered {self.outdir_dic[sample]['outs']}/filtered "
+            f"--barcodes_file {self.outdir_dic[sample]['outs']}/filtered/barcodes.tsv.gz "
         )
         self.process_cmd(cmd, step, sample, m=10, x=self.args.thread)
 

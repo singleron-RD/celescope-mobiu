@@ -299,8 +299,7 @@ def get_matrix_file_path(matrix_dir, file_name):
 def get_barcode_from_matrix_dir(matrix_dir):
     """
     Returns:
-        match_barcode: list
-        n_match_barcode: int
+        match_barcode, n_match_barcode
     """
 
     match_barcode_file = get_matrix_file_path(matrix_dir, BARCODE_FILE_NAME)

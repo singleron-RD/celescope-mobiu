@@ -89,9 +89,16 @@ class Multi_mobiu(Multi):
 
     def analysis(self, sample):
         step = "analysis"
-        matrix_file = f'{self.outdir_dic[sample]["outs"]}/filtered'
+        gene_matrix_file = f'{self.outdir_dic[sample]["outs"]}/filtered'
+        transcript_matrix_file = (
+            f'{self.outdir_dic[sample]["outs"]}/transcript.filtered'
+        )
         cmd_line = self.get_cmd_line(step, sample)
-        cmd = f"{cmd_line} " f"--matrix_file {matrix_file} "
+        cmd = (
+            f"{cmd_line} "
+            f"--gene_matrix_file {gene_matrix_file} "
+            f"--transcript_matrix_file {transcript_matrix_file} "
+        )
         self.process_cmd(cmd, step, sample, m=10, x=1)
 
 

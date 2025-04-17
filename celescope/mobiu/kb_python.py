@@ -2,6 +2,7 @@ import os
 import shutil
 
 import numpy as np
+import pandas as pd
 import scipy
 from celescope.tools import utils
 from celescope.tools.step import Step, s_common
@@ -79,16 +80,30 @@ class Kb_python(Step):
         subprocess.check_call(cmd, shell=True)
 
     @utils.add_log
+    def get_transcript_gene_dict(self):
+        df = pd.read_csv(f"{self.args.kbDir}/t2g.txt", sep="\t", header=None)
+        transcript_gene_dict = dict(zip(df[0], df[2]))
+        return transcript_gene_dict
+
+    @utils.add_log
     def get_filtered_matrix(self):
         os.makedirs(self.filtered, exist_ok=True)
         add_underscore(
             f"{self.outdir}/counts_unfiltered/cells_x_tcc.barcodes.txt",
             f"{self.filtered}/barcodes.tsv",
         )
+        features_file = f"{self.filtered}/features.tsv"
         shutil.copy(
             f"{self.outdir}/quant_unfiltered/transcripts.txt",
-            f"{self.filtered}/features.tsv",
+            features_file,
         )
+        transcript_gene_dict = self.get_transcript_gene_dict()
+        features_df = pd.read_csv(features_file, sep="\t", header=None)
+        features_df[1] = [
+            transcript_gene_dict[transcript] for transcript in features_df[0]
+        ]
+        features_df[2] = "Gene Expression"
+        features_df.to_csv(features_file, sep="\t", header=False, index=False)
         matrix = scipy.io.mmread(f"{self.outdir}/quant_unfiltered/matrix.abundance.mtx")
         matrix = matrix.transpose()
         with open(f"{self.filtered}/matrix.mtx", "wb") as f:

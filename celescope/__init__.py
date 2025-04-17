@@ -1,13 +1,13 @@
 import os
 
-__VERSION__ = "1.0.0"
+__VERSION__ = "1.1.0"
 __version__ = __VERSION__
 
-ASSAY_LIST = ["mobiu"]
+ASSAY_LIST = ["mobiu", "rna"]
 
 ROOT_PATH = os.path.dirname(__file__)
 
-RELEASED_ASSAYS = ["mobiu"]
+RELEASED_ASSAYS = ["mobiu", "rna"]
 
 # argument help
 HELP_DICT = {

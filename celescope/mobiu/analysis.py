@@ -96,7 +96,7 @@ class Analysis(Step):
     def calculate_qc_metrics(self, feature="gene"):
         if self.mt_gene_list:
             mito_genes, _ = utils.read_one_col(self.mt_gene_list)
-            self.adata[feature].var[MITO_VAR] = self.adata["gene"].var_names.map(
+            self.adata[feature].var[MITO_VAR] = self.adata[feature].var_names.map(
                 lambda x: True if x in mito_genes else False
             )
             # if not astype(bool), it will be type object and raise an error

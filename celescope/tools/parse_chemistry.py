@@ -168,11 +168,13 @@ def get_raw_umi_bc_and_quality(
     """
     bc_list = [seq[x] for x in pattern_dict["C"]]
     bc_quality_list = [quality[x] for x in pattern_dict["C"]]
+    umi = seq[pattern_dict["U"][0]]
+    umi_qual = quality[pattern_dict["U"][0]]
     if reverse_complement:
         bc_list = [utils.reverse_complement(x) for x in bc_list[::-1]]
         bc_quality_list = bc_quality_list[::-1]
-    umi = seq[pattern_dict["U"][0]]
-    umi_qual = quality[pattern_dict["U"][0]]
+        umi = utils.reverse_complement(umi)
+        umi_qual = utils.reverse_complement(umi_qual)
     return bc_list, bc_quality_list, umi, umi_qual
 
 

@@ -5,7 +5,6 @@ from itertools import groupby
 
 import numpy as np
 import pysam
-from xopen import xopen
 
 from celescope.tools import utils
 from celescope.tools.step import Step, s_common
@@ -90,7 +89,7 @@ def sorted_dumb_consensus(fq, outfile, threshold, min_consensus_read, out_fmt):
     n_umi = 0
     total_ambiguous_base_n = 0
     length_list = []
-    out_h = xopen(outfile, "w")
+    out_h = open(outfile, "w")
 
     def keyfunc(read):
         attr = read.name.split(":")

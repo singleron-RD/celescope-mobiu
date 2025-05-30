@@ -78,13 +78,7 @@ def create_mismatch_origin_dict(origin_seqs: list, n_mismatch=1) -> dict[str, st
 def create_mismatch_origin_dicts_from_whitelists(
     whitelists: list, n_mismatch: int = 1
 ) -> tuple[list, list]:
-    """Returns origin whitelist list and mismatch dict list.
-
-    >>> whitelists = [os.path.join(chemistry_dir, "GEXSCOPE-V1/bc.txt")]
-    >>> raw_list, mismatch_list = create_mismatch_origin_dicts_from_whitelists(whitelists)
-    >>> len(raw_list) == len(mismatch_list)
-    True
-    """
+    """Returns origin whitelist list and mismatch dict list."""
     raw_list, mismatch_list = [], []
     for f in whitelists:
         barcodes = utils.one_col_to_list(f)
@@ -141,10 +135,6 @@ def get_chemistry_dict():
     """
     Return:
     chemistry_dict. Key: chemistry name, value: chemistry dict
-
-    >>> chemistry_dict = get_chemistry_dict()
-    >>> chemistry_dict["GEXSCOPE-MicroBead"]["pattern_dict"]
-    {'C': [slice(0, 12, None)], 'U': [slice(12, 20, None)]}
     """
     # add folder prefix
     for chemistry in chemistry_dict:
@@ -266,115 +256,47 @@ class Auto:
         return chemistry
 
 
-class AutoRNA(Auto):
+LINKER1 = "ATCCAGCTGCTTGAGATC"
+
+
+class AutoMobiu(Auto):
     def __init__(self, fq1_list, max_read=10000):
         super().__init__(fq1_list, get_chemistry_dict(), max_read)
-        self.v3_linker_mismatch = create_mismatch_origin_dicts_from_whitelists(
-            self.chemistry_dict["GEXSCOPE-V3"]["linker"], 1
-        )
+        self.linker1_mismatch = create_mismatch_seqs(LINKER1, max_mismatch=2)
 
-    def v3_offset(self, seq):
+    def seq_chemistry(self, seq):
         """
-        return -1 if not v3
+        Returns: chemistry or None
+        """
+        for chemistry in ["mobiu-1", "mobiu-2", "mobiu-3"]:
+            if self.is_chemistry(seq, chemistry):
+                return chemistry
 
-        >>> seq = "AT" + "TCGACTGTC" + "ACGATG" + "TTCTAGGAT" + "CATAGT" + "TGCACGAGA" + "C" + "CATATCAATGGG" + "TTTTTTTTTT"
-        >>> runner = AutoRNA([], "fake_sample")
-        >>> runner.v3_offset(seq)
-        2
-        >>> seq = "TCGACTGTC" + "ACGATG" + "TTCTAGGAT" + "CATAGT" + "TGCACGAGA" + "C" + "CATATCAATGGG" + "TTTTTTTTTT"
-        >>> runner.v3_offset(seq)
+    def v4_offset(self, seq):
+        """
+        return -1 if not v4
+
+        >>> seq = "ATCCAGCTGCTTGAGATC" + "AACGGACCT" + "ACGATG" + "TTGGTGACC" + "CATAGT" + "TTCGGTCAA" + "CATATCAATGGG" + "TTTTTTTTTT"
+        >>> runner = AutoMobiu([], "fake_sample")
+        >>> runner.v4_offset(seq)
         0
-        >>> seq = "TCGACTGTC" + "ATATAT" + "TTCTAGGAT" + "CATAGT" + "TGCACGAGA" + "C" + "CATATCAATGGG" + "TTTTTTTTTT"
-        >>> runner.v3_offset(seq)
+
+        >>> seq = "AA" + "ATCCAGCTGCTTGAGATC" + "AACGGACCT" + "ACGATG" + "TTGGTGACC" + "CATAGT" + "TTCGGTCAA" + "CATATCAATGGG" + "TTTTTTTTTT"
+        >>> runner = AutoMobiu([], "fake_sample")
+        >>> runner.v4_offset(seq)
+        2
+
+        >>> seq = "AA" + "TATATATCCAGCTGCTTGAGATC" + "AACGGACCT" + "ACGATG" + "TTGGTGACC" + "CATAGT" + "TTCGGTCAA" + "CATATCAATGGG" + "TTTTTTTTTT"
+        >>> runner = AutoMobiu([], "fake_sample")
+        >>> runner.v4_offset(seq)
         -1
         """
-        bc_len = 9
-        linker_len = 6
         max_offset_len = 3 + 1  # allow for extra 1 bases
         for offset in range(max_offset_len + 1):
-            first_linker_start = offset + bc_len
-            second_linker_start = first_linker_start + linker_len + bc_len
-            first_linker_seq = seq[first_linker_start : first_linker_start + linker_len]
-            second_linker_seq = seq[
-                second_linker_start : second_linker_start + linker_len
-            ]
-            valid, _, _ = check_seq_mismatch(
-                [first_linker_seq, second_linker_seq], *self.v3_linker_mismatch
-            )
-            if valid:
+            linker1_seq = seq[offset : offset + len(LINKER1)]
+            if linker1_seq in self.linker1_mismatch:
                 return offset
         return -1
-
-    def seq_chemistry(self, seq):
-        """
-        Returns: chemistry or None
-
-        >>> import tempfile
-        >>> runner = AutoRNA([], "fake_sample")
-        >>> seq = "AT" + "TCGACTGTC" + "ACGATG" + "TTCTAGGAT" + "CATAGT" + "TGCACGAGA" + "C" + "CATATCAATGGG" + "TTTTTTTTTT"
-        >>> runner.seq_chemistry(seq)
-        'GEXSCOPE-V3'
-        >>> seq = "TCGACTGTC" + "ATCCACGTGCTTGAGA" + "TTCTAGGAT" + "TCAGCATGCGGCTACG" + "TGCACGAGA" + "C" + "CATATCAATGGG" + "TTTTTTTTTT"
-        >>> runner.seq_chemistry(seq)
-        'GEXSCOPE-V2'
-        >>> seq = "NCAGATTC" + "TCGGTGACAGCCATAT" + "GTACGCAA" + "CGTAGTCAGAAGCTGA" + "CTGAGCCA" + "C" + "TCCGAAGCCCAT" + "TTTTTTTTTT"
-        >>> runner.seq_chemistry(seq)
-        'GEXSCOPE-V1'
-        >>> seq = "NCAGATTC" + "TCGGTGACAGCCATAT" + "GTACGCAA" + "CGTAGTCAGAAGCTGA" + "CTGAGCCA"  + "TCCGAAGCC" + "CTGTCT"
-        >>> runner.seq_chemistry(seq)
-        'flv_rna'
-        >>> seq = "NCAGATTC" + "TCGGTGACAGCCATAT" + "GTACGCAA" + "CGTAGTCAGAAGCTGA" + "CTGAGCCA"  + "TCCGAAGCC"
-        >>> runner.seq_chemistry(seq)
-        'GEXSCOPE-V1'
-        >>> seq = "ATCGATCGATCG" + "ATCGATCG" + "C" + "TTTTTTTTTT"
-        >>> runner.seq_chemistry(seq)
-        'GEXSCOPE-MicroBead'
-        """
-        if self.v3_offset(seq) != -1:
-            return "GEXSCOPE-V3"
-
-        for chemistry in ["GEXSCOPE-V2", "GEXSCOPE-V1"]:
-            if self.is_chemistry(seq, chemistry):
-                if chemistry == "GEXSCOPE-V1":
-                    if (
-                        seq[self.chemistry_dict["flv_rna"]["pattern_dict"]["L"][2]]
-                        == "CTGTCT"
-                    ):
-                        return "flv_rna"
-                return chemistry
-
-        # check if it is MicroBead
-        if seq[16:20] != "TTTT" and seq[22:26] == "TTTT":
-            return "GEXSCOPE-MicroBead"
-
-
-class AutoBulkRNA(Auto):
-    def __init__(self, fq1_list, max_read=10000):
-        super().__init__(fq1_list, get_chemistry_dict(), max_read)
-
-    def seq_chemistry(self, seq):
-        """
-        Returns: chemistry or None
-        """
-        # V2 9bp linker is ATACGCGGA, which is a valid barcode of V1; so must detect V2 first, otherwise it is a valid V1
-        for chemistry in ["bulk_rna-V2", "bulk_rna-V1", "bulk_rna-bulk_vdj_match"]:
-            if self.is_chemistry(seq, chemistry):
-                return chemistry
-
-
-@utils.add_log
-def get_chemistry(assay: str, args_chemistry: str, fq1_list: list) -> str:
-    """Auto detect chemistry. If customized, return 'customized'"""
-    if assay in ["bulk_vdj"]:
-        return assay
-    elif assay == "flv_trust4":
-        return "flv"
-    elif args_chemistry == "auto":
-        if assay == "bulk_rna":
-            return AutoBulkRNA(fq1_list).get_chemistry()
-        return AutoRNA(fq1_list).get_chemistry()
-    else:
-        return args_chemistry
 
 
 @utils.add_log
@@ -389,3 +311,7 @@ def get_pattern_dict_and_bc(
         pattern_dict = parse_pattern(pattern)
         bc = whitelist.split(" ")
     return pattern_dict, bc
+
+
+def get_chemistry(assay, args_chemistry, fq1_list):
+    return args_chemistry

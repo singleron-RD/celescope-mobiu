@@ -34,6 +34,17 @@ chemistry_dict = {
         "pattern": "C9C9C9U9",  # converted
         "bc": ["bc1.txt", "bc2.txt", "bc3.txt"],
     },
+    "mobiu_5p-4": {
+        "pattern": "U12C9L6C9L6C9L18",
+    },
+    "mobiu_3p-4": {
+        "pattern": "L18C9L6C9L6C9U12",
+    },
+    "mobiu-4": {
+        "pattern": "C9C9C9U12",  # converted
+        "bc": ["bc1.txt", "bc2.txt", "bc3.txt"],
+        "linker": ["linker1.txt", "linker2.txt", "linker3.txt"],
+    },
 }
 
 chemistry_dir = str(resources.files("celescope.data.chemistry"))

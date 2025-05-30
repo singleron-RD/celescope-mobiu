@@ -29,6 +29,7 @@ class Convert(Step):
         )
 
     def write_3p(self):
+        runner = parse_chemistry.AutoMobiu(self.fq1_3p)
         for i, (fn1, fn2) in enumerate(zip(self.fq1_3p, self.fq2_3p), start=1):
             out_fn1 = f"{self.out_prefix}_3p{i}_R1.fq.gz"
             out_fn2 = f"{self.out_prefix}_3p{i}_R2.fq.gz"
@@ -36,6 +37,10 @@ class Convert(Step):
             with pysam.FastxFile(fn1, persist=False) as fq:
                 for entry1 in fq:
                     name1, seq1, qual1 = entry1.name, entry1.sequence, entry1.quality
+                    offset = runner.v4_offset(seq1)
+                    if offset != -1:
+                        seq1 = seq1[offset:]
+                        qual1 = qual1[offset:]
                     bc_list, bc_quality_list, umi, umi_quality = (
                         parse_chemistry.get_raw_umi_bc_and_quality(
                             seq1, qual1, self.chemistry_dict_3p["pattern_dict"]
@@ -97,7 +102,7 @@ def get_opts_convert(parser, sub_program=True):
     parser.add_argument(
         "--chemistry",
         default="mobiu-1",
-        choices=["mobiu-1", "mobiu-2", "mobiu-3"],
+        choices=["mobiu-1", "mobiu-2", "mobiu-3", "mobiu-4"],
         help="chemistry version",
     )
     if sub_program:

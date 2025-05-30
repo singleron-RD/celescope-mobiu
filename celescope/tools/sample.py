@@ -47,7 +47,7 @@ def get_opts_sample(parser, sub_program):
     parser.add_argument(
         "--chemistry",
         default="mobiu-1",
-        choices=["mobiu-1", "mobiu-2", "mobiu-3"],
+        choices=["mobiu-1", "mobiu-2", "mobiu-3", "mobiu-4"],
         help="chemistry version",
     )
     return parser

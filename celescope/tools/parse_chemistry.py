@@ -174,7 +174,7 @@ def get_raw_umi_bc_and_quality(
         bc_list = [utils.reverse_complement(x) for x in bc_list[::-1]]
         bc_quality_list = bc_quality_list[::-1]
         umi = utils.reverse_complement(umi)
-        umi_qual = utils.reverse_complement(umi_qual)
+        umi_qual = umi_qual[::-1]
     return bc_list, bc_quality_list, umi, umi_qual
 
 

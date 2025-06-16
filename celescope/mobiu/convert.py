@@ -75,7 +75,7 @@ class Convert(Step):
                     bc_quality = "".join(bc_quality_list)
                     fh_5p_1.write(
                         utils.fastq_line(
-                            name1 + ":" + "5p", bc + umi, bc_quality + umi_quality
+                            "5p:" + name1, bc + umi, bc_quality + umi_quality
                         )
                     )
             fh_5p_1.close()
@@ -84,7 +84,7 @@ class Convert(Step):
                     name2, seq2, qual2 = entry2.name, entry2.sequence, entry2.quality
                     seq2 = utils.reverse_complement(seq2)
                     qual2 = qual2[::-1]
-                    fh_5p_2.write(utils.fastq_line(name2 + ":" + "5p", seq2, qual2))
+                    fh_5p_2.write(utils.fastq_line("5p:" + name2, seq2, qual2))
             fh_5p_2.close()
 
     def run(self):

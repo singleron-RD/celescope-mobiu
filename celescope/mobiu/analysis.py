@@ -49,7 +49,6 @@ def get_opts_analysis(parser, sub_program):
         )
         parser.add_argument(
             "--transcript_matrix_file",
-            required=True,
         )
         parser = s_common(parser)
 
@@ -65,10 +64,11 @@ class Analysis(Step):
             args.gene_matrix_file,
             var_names="gene_symbols",
         )
-        self.adata["transcript"] = sc.read_10x_mtx(
-            args.transcript_matrix_file,
-            var_names="gene_ids",
-        )
+        if self.args.kbDir:
+            self.adata["transcript"] = sc.read_10x_mtx(
+                args.transcript_matrix_file,
+                var_names="gene_ids",
+            )
         self.adata["gene"].layers["raw"] = self.adata["gene"].X.copy()
         self.mt_gene_list = Mkref_rna.get_config(args.genomeDir)["files"][
             "mt_gene_list"
@@ -281,11 +281,12 @@ class Analysis(Step):
 
     @utils.add_log
     def transfer_cluster(self):
-        self.adata["transcript"].obs["cluster"] = (
-            self.adata["gene"]
-            .obs["cluster"]
-            .reindex(self.adata["transcript"].obs_names)
-        )
+        if self.args.kbDir:
+            self.adata["transcript"].obs["cluster"] = (
+                self.adata["gene"]
+                .obs["cluster"]
+                .reindex(self.adata["transcript"].obs_names)
+            )
 
     @utils.add_log
     def find_marker_genes(self, feature="gene"):
@@ -374,10 +375,13 @@ class Analysis(Step):
         df_tsne = self.adata["gene"].obsm.to_df()[["X_tsne1", "X_tsne2"]]
         df_tsne["cluster"] = self.adata["gene"].obs.cluster
         df_tsne["Gene_Counts"] = self.adata["gene"].obs.n_genes_by_counts
-        df_tsne["Transcript_Counts"] = self.adata["transcript"].obs.n_genes_by_counts
-        df_tsne["Transcript_Counts"] = (
-            df_tsne["Transcript_Counts"].fillna(0).astype(int)
-        )
+        if self.args.kbDir:
+            df_tsne["Transcript_Counts"] = self.adata[
+                "transcript"
+            ].obs.n_genes_by_counts
+            df_tsne["Transcript_Counts"] = (
+                df_tsne["Transcript_Counts"].fillna(0).astype(int)
+            )
         df_tsne.index.names = ["barcode"]
         tsne_name_dict = {"X_tsne1": "tSNE_1", "X_tsne2": "tSNE_2"}
         df_tsne = df_tsne.rename(tsne_name_dict, axis="columns")
@@ -436,7 +440,8 @@ class Analysis(Step):
     @utils.add_log
     def run(self):
         self.calculate_qc_metrics(feature="gene")
-        self.calculate_qc_metrics(feature="transcript")
+        if self.args.kbDir:
+            self.calculate_qc_metrics(feature="transcript")
         self.write_mito_stats()
         self.normalize(feature="gene")
         self.hvg()
@@ -449,14 +454,17 @@ class Analysis(Step):
         self.find_marker_genes(feature="gene")
         gene_markers = self.write_markers(feature="gene")
 
-        self.normalize(feature="transcript")
-        self.transfer_cluster()
-        self.find_marker_genes(feature="transcript")
-        transcript_markers = self.write_markers(feature="transcript")
+        transcript_markers = pd.DataFrame()
+        if self.args.kbDir:
+            self.normalize(feature="transcript")
+            self.transfer_cluster()
+            self.find_marker_genes(feature="transcript")
+            transcript_markers = self.write_markers(feature="transcript")
 
         df_tsne = self.write_tsne()
         self.write_h5ad("gene")
-        self.write_h5ad("transcript")
+        if self.args.kbDir:
+            self.write_h5ad("transcript")
         self.add_report_data(df_tsne, gene_markers, transcript_markers)
         self.add_marker_help()
 

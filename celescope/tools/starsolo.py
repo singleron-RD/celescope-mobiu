@@ -153,15 +153,10 @@ class Starsolo(Step):
         self.extra_starsolo_args = args.STAR_param
 
         # output files
-        self.solo_out_dir = f"{self.outdir}/{self.sample}_Solo.out/"
-        solo_dir = f"{self.outdir}/{self.sample}_Solo.out/GeneFull_Ex50pAS"
-        self.raw_matrix = f"{solo_dir}/raw"
-        self.filtered_matrix = f"{solo_dir}/filtered"
-        self.summary_file = f"{solo_dir}/Summary.csv"
         bam = f"{self.outdir}/{self.sample}_Aligned.sortedByCoord.out.bam"
 
         # outs
-        self.outs = [self.raw_matrix, self.filtered_matrix, bam]
+        self.outs = [bam]
 
     def run_starsolo(self):
         cmd = create_solo_args(
@@ -182,18 +177,31 @@ class Starsolo(Step):
         )
         sys.stderr.write(cmd)
         subprocess.check_call(cmd, shell=True)
-        cmd = f"chmod -R 755 {self.solo_out_dir}"
-        sys.stderr.write(cmd)
+        solo_out_dir = f"{self.outdir}/{self.sample}_Solo.out"
+        cmd = f"chmod -R 755 {solo_out_dir}\n"
         subprocess.check_call(cmd, shell=True)
 
     @utils.add_log
     def gzip_matrix(self):
-        if not os.path.exists(self.filtered_matrix):
+        ex50_dir = f"{self.outdir}/{self.sample}_Solo.out/GeneFull_Ex50pAS"
+        raw_matrix = f"{ex50_dir}/raw"
+        filtered_matrix = f"{ex50_dir}/filtered"
+        if not os.path.exists(filtered_matrix):
             sys.exit(
-                f"{self.filtered_matrix} not found. This error indicates that StarSolo did not generate the gene expression matrix correctly. The specific cause of this error can usually be found in the log above. A common cause of the error is that the fastq file was truncated due to incomplete download."
+                f"{filtered_matrix} not found. This error indicates that StarSolo did not generate the gene expression matrix correctly. The specific cause of this error can usually be found in the log above. A common cause of the error is that the fastq file was truncated due to incomplete download."
             )
-        cmd = f"gzip {self.raw_matrix}/*; gzip {self.filtered_matrix}/*"
+        utils.gzip_files_in_dir(raw_matrix, f"{self.outs_dir}/raw")
+        utils.gzip_files_in_dir(filtered_matrix, f"{self.outs_dir}/filtered")
+
+    @utils.add_log
+    def get_sj_dir(self):
+        sj_matrix_dir = f"{self.outdir}/{self.sample}_Solo.out/SJ/raw"
+        sj_out_dir = f"{self.outdir}/SJ.raw"
+        cmd = f"cp -r {sj_matrix_dir} {sj_out_dir}; cp -L {sj_out_dir}/features.tsv tmpfile;"
+        cmd += f"""awk '{{print "chr"$1":"$2":"$3}}' tmpfile > {sj_out_dir}/features.tsv;"""
+        cmd += "rm tmpfile;"
         subprocess.check_call(cmd, shell=True)
+        utils.gzip_files_in_dir(sj_out_dir, f"{self.outs_dir}/SJ.raw")
 
     @utils.add_log
     def get_Q30_cb_UMI(self):
@@ -241,6 +249,7 @@ class Starsolo(Step):
     def run(self):
         self.run_starsolo()
         self.gzip_matrix()
+        self.get_sj_dir()
         q30_cb, q30_umi = self.get_Q30_cb_UMI()
         return q30_cb, q30_umi, self.chemistry
 
@@ -509,7 +518,7 @@ is higher than or equal to this value.""",
     parser.add_argument(
         "--soloFeatures",
         help="The same as the argument in STARsolo",
-        default="GeneFull_Ex50pAS Gene",
+        default="GeneFull_Ex50pAS SJ Gene",
     )
     parser.add_argument(
         "--soloCBmatchWLtype",

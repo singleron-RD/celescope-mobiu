@@ -1,10 +1,9 @@
 # User guide
 
-## Hardware/Software requirements
+## Requirements
 
 - 64 bit Linux
 - Minimum 32GB RAM to run [STAR](https://github.com/alexdobin/STAR) with human/mouse genome
-- [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html) or [conda](https://anaconda.org/anaconda/conda)
 
 ## Installation
 

@@ -4,7 +4,6 @@ convert 5-prime and 3-prime to the same pattern.
 
 from celescope.tools import utils, parse_chemistry
 from celescope.tools.step import Step, s_common
-import subprocess
 import pysam
 
 
@@ -12,10 +11,10 @@ class Convert(Step):
     def __init__(self, args, display_title=None):
         Step.__init__(self, args, display_title=display_title)
 
-        self.fq1_5p = args.fq1_5p.split(",")
         self.fq1_3p = args.fq1_3p.split(",")
-        self.fq2_5p = args.fq2_5p.split(",")
         self.fq2_3p = args.fq2_3p.split(",")
+        self.fq1_5p = args.fq1_5p.split(",")
+        self.fq2_5p = args.fq2_5p.split(",")
 
         chemistry_version = args.chemistry.split("-")[1]
         chemistry_5p, chemistry_3p = (
@@ -28,15 +27,20 @@ class Convert(Step):
             chemistry_dict[chemistry_3p],
         )
 
+    @utils.add_log
     def write_3p(self):
+        p3_r1_file = f"{self.out_prefix}_3p_R1.fq.gz"
+        p3_r2_file = f"{self.out_prefix}_3p_R2.fq.gz"
+        fh_r1 = utils.generic_open(p3_r1_file, "wt", compresslevel=1)
+        fh_r2 = utils.generic_open(p3_r2_file, "wt", compresslevel=1)
         runner = parse_chemistry.AutoMobiu(self.fq1_3p)
-        for i, (fn1, fn2) in enumerate(zip(self.fq1_3p, self.fq2_3p), start=1):
-            out_fn1 = f"{self.out_prefix}_3p{i}_R1.fq.gz"
-            out_fn2 = f"{self.out_prefix}_3p{i}_R2.fq.gz"
-            fh_3p = utils.generic_open(out_fn1, "wt", compresslevel=1)
-            with pysam.FastxFile(fn1, persist=False) as fq:
-                for entry1 in fq:
+        for fn1, fn2 in zip(self.fq1_3p, self.fq2_3p):
+            with pysam.FastxFile(fn1, persist=False) as fq1, pysam.FastxFile(
+                fn2, persist=False
+            ) as fq2:
+                for entry1, entry2 in zip(fq1, fq2):
                     name1, seq1, qual1 = entry1.name, entry1.sequence, entry1.quality
+                    name2, seq2, qual2 = entry2.name, entry2.sequence, entry2.quality
                     offset = runner.v4_offset(seq1)
                     if offset != -1:
                         seq1 = seq1[offset:]
@@ -48,20 +52,24 @@ class Convert(Step):
                     )
                     bc = "".join(bc_list)
                     bc_quality = "".join(bc_quality_list)
-                    fh_3p.write(
+                    fh_r1.write(
                         utils.fastq_line(name1, bc + umi, bc_quality + umi_quality)
                     )
-            cmd = f"ln -s -f {fn2} {out_fn2}"
-            subprocess.check_call(cmd, shell=True)
+                    fh_r2.write(utils.fastq_line(name2, seq2, qual2))
+        fh_r1.close()
+        fh_r2.close()
 
+    @utils.add_log
     def write_5p(self):
-        for i, (fn1, fn2) in enumerate(zip(self.fq1_5p, self.fq2_5p), start=1):
-            out_fn1 = f"{self.out_prefix}_5p{i}_R1.fq.gz"
-            out_fn2 = f"{self.out_prefix}_5p{i}_R2.fq.gz"
-            fh_5p_1 = utils.generic_open(out_fn1, "wt", compresslevel=1)
-            fh_5p_2 = utils.generic_open(out_fn2, "wt", compresslevel=1)
-            with pysam.FastxFile(fn1, persist=False) as fq:
-                for entry1 in fq:
+        P5_PREFIX = "5p:"
+        p5_r1_file = f"{self.out_prefix}_5p_R1.fq.gz"
+        p5_r2_file = f"{self.out_prefix}_5p_R2.fq.gz"
+        fh_r1 = utils.generic_open(p5_r1_file, "wt", compresslevel=1)
+        fh_r2 = utils.generic_open(p5_r2_file, "wt", compresslevel=1)
+
+        for fn1 in self.fq1_5p:
+            with pysam.FastxFile(fn1, persist=False) as fq1:
+                for entry1 in fq1:
                     name1, seq1, qual1 = entry1.name, entry1.sequence, entry1.quality
                     bc_list, bc_quality_list, umi, umi_quality = (
                         parse_chemistry.get_raw_umi_bc_and_quality(
@@ -73,19 +81,21 @@ class Convert(Step):
                     )
                     bc = "".join(bc_list)
                     bc_quality = "".join(bc_quality_list)
-                    fh_5p_1.write(
+                    fh_r1.write(
                         utils.fastq_line(
-                            "5p:" + name1, bc + umi, bc_quality + umi_quality
+                            P5_PREFIX + name1, bc + umi, bc_quality + umi_quality
                         )
                     )
-            fh_5p_1.close()
+        fh_r1.close()
+
+        for fn2 in self.fq2_5p:
             with pysam.FastxFile(fn2, persist=False) as fq:
                 for entry2 in fq:
                     name2, seq2, qual2 = entry2.name, entry2.sequence, entry2.quality
                     seq2 = utils.reverse_complement(seq2)
                     qual2 = qual2[::-1]
-                    fh_5p_2.write(utils.fastq_line("5p:" + name2, seq2, qual2))
-            fh_5p_2.close()
+                    fh_r2.write(utils.fastq_line(P5_PREFIX + name2, seq2, qual2))
+        fh_r2.close()
 
     def run(self):
         self.write_3p()

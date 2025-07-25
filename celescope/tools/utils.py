@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 import unittest
+import shutil
 from collections import Counter, OrderedDict, defaultdict
 from datetime import timedelta
 from functools import wraps
@@ -649,6 +650,29 @@ def barcode_list_stamp(barcode_list, cut=500):
             m = 1
             stamp[n].append(i)
     return stamp, bc_num
+
+
+def gzip_files_in_dir(src_dir, dest_dir):
+    """
+    将 src_dir 目录中的所有文件 gzip 压缩，并输出到 dest_dir 中。
+    只处理一级目录中的文件（不递归子目录）。
+
+    参数:
+        src_dir (str): 源目录路径
+        dest_dir (str): 输出目录路径
+    """
+    if os.path.exists(dest_dir):
+        shutil.rmtree(dest_dir)
+    os.makedirs(dest_dir, exist_ok=True)
+    for filename in os.listdir(src_dir):
+        src_path = os.path.join(src_dir, filename)
+
+        if os.path.isfile(src_path):
+            dest_path = os.path.join(dest_dir, filename + ".gz")
+            with open(src_path, "rb") as f_in:
+                with gzip.open(dest_path, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+            print(f"Compressed: {src_path} -> {dest_path}")
 
 
 class Test_utils(unittest.TestCase):

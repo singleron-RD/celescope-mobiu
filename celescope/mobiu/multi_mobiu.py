@@ -47,42 +47,24 @@ class Multi_mobiu(Multi):
 
     def starsolo(self, sample):
         step = "starsolo"
-        arr = self.get_5p3p_fq(sample)
         cmd_line = self.get_cmd_line(step, sample)
-        fq1_list, fq2_list = [], []
-        cnt = {"3p": 0, "5p": 0}
-        for x in arr["col4"]:
-            cnt[x] += 1
-            fq1 = f'{self.outdir_dic[sample]["convert"]}/{sample}_{x}{cnt[x]}_R1.fq.gz'
-            fq2 = f'{self.outdir_dic[sample]["convert"]}/{sample}_{x}{cnt[x]}_R2.fq.gz'
-            fq1_list.append(fq1)
-            fq2_list.append(fq2)
-        fq1_str = ",".join(fq1_list)
-        fq2_str = ",".join(fq2_list)
-        cmd = (
-            f"{cmd_line} "
-            f"--fq1 {fq1_str} --fq2 {fq2_str} "
-            f'--soloFeatures "GeneFull_Ex50pAS Gene SJ" '
-        )
+        p3_r1 = f'{self.outdir_dic[sample]["convert"]}/{sample}_3p_R1.fq.gz'
+        p3_r2 = f'{self.outdir_dic[sample]["convert"]}/{sample}_3p_R2.fq.gz'
+        p5_r1 = f'{self.outdir_dic[sample]["convert"]}/{sample}_5p_R1.fq.gz'
+        p5_r2 = f'{self.outdir_dic[sample]["convert"]}/{sample}_5p_R2.fq.gz'
+        cmd = f"{cmd_line} " f"--fq1 {p3_r1},{p5_r1} --fq2 {p3_r2},{p5_r2} "
         self.process_cmd(cmd, step, sample, m=self.args.starMem, x=self.args.thread)
 
     def kb_python(self, sample):
         step = "kb_python"
-        arr = self.get_5p3p_fq(sample)
         cmd_line = self.get_cmd_line(step, sample)
-        fq1_list, fq2_list = [], []
-        cnt = {"3p": 0, "5p": 0}
-        for x in arr["col4"]:
-            cnt[x] += 1
-            fq1 = f'{self.outdir_dic[sample]["convert"]}/{sample}_{x}{cnt[x]}_R1.fq.gz'
-            fq2 = f'{self.outdir_dic[sample]["convert"]}/{sample}_{x}{cnt[x]}_R2.fq.gz'
-            fq1_list.append(fq1)
-            fq2_list.append(fq2)
-        fq1_str = ",".join(fq1_list)
-        fq2_str = ",".join(fq2_list)
+        p3_r1 = f'{self.outdir_dic[sample]["convert"]}/{sample}_3p_R1.fq.gz'
+        p3_r2 = f'{self.outdir_dic[sample]["convert"]}/{sample}_3p_R2.fq.gz'
+        p5_r1 = f'{self.outdir_dic[sample]["convert"]}/{sample}_5p_R1.fq.gz'
+        p5_r2 = f'{self.outdir_dic[sample]["convert"]}/{sample}_5p_R2.fq.gz'
         cmd = (
             f"{cmd_line} "
-            f"--fq1 {fq1_str} --fq2 {fq2_str} "
+            f"--fq1 {p3_r1},{p5_r1} --fq2 {p3_r2},{p5_r2} "
             f"--barcodes_file {self.outdir_dic[sample]['outs']}/filtered/barcodes.tsv.gz "
         )
         self.process_cmd(cmd, step, sample, m=10, x=self.args.thread)

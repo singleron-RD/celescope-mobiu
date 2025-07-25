@@ -288,15 +288,12 @@ class Step:
 
     def _move_files(self):
         for f in self.outs:
-            cmd = ""
             if not os.path.exists(f):
                 sys.stderr.write(
                     f"WARNING: output file {f} not found! The pipeline may have failed.\n"
                 )
-            elif os.path.isfile(f):
-                cmd = f"mv -f {f} {self.outs_dir}"
-            elif os.path.isdir(f):
-                cmd = f"set -e; cp -r {f} {self.outs_dir}; rm -r {f}"
+                continue
+            cmd = f"mv -f {f} {self.outs_dir}"
             subprocess.check_call(cmd, shell=True)
 
     @utils.add_log

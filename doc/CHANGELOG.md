@@ -1,7 +1,12 @@
+# Changelog
+
+## [1.3.0] - 2025-07-25
+- Added: Enabled support for multiple input FASTQ files per sample.
+- Added: Output of splice junction (SJ) matrix in MARVEL-compatible format.
+
 ## [1.2.0] - 2025-06-26
-- Added support for mobiu-4
-- Fix reverse complement of umi_qual in get_raw_umi_bc_and_quality function
+- Added: Support for the `mobiu-4` chemistry.
+- Fixed: Corrected reverse complement logic for umi_qual.
 
 ## [1.1.0] - 2025-04-17
-
-- Added transcript marker.
+- Added: Transcript marker functionality.

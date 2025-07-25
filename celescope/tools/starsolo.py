@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import shutil
 from collections import Counter
 
 import pandas as pd
@@ -197,9 +198,14 @@ class Starsolo(Step):
     def get_sj_dir(self):
         sj_matrix_dir = f"{self.outdir}/{self.sample}_Solo.out/SJ/raw"
         sj_out_dir = f"{self.outdir}/SJ.raw"
-        cmd = f"cp -r {sj_matrix_dir} {sj_out_dir}; cp -L {sj_out_dir}/features.tsv tmpfile;"
-        cmd += f"""awk '{{print "chr"$1":"$2":"$3}}' tmpfile > {sj_out_dir}/features.tsv;"""
-        cmd += "rm tmpfile;"
+        shutil.copytree(sj_matrix_dir, sj_out_dir, dirs_exist_ok=True)
+        src = f"{sj_matrix_dir}/features.tsv"
+        dest = f"{sj_out_dir}/features.tsv"
+        first_line = open(src, "r").readline()
+        if not first_line.startswith("chr"):
+            cmd = f"""awk '{{print "chr"$1":"$2":"$3}}' {src} > {dest};"""
+        else:
+            cmd = f"cp -L {src} {dest}"
         subprocess.check_call(cmd, shell=True)
         utils.gzip_files_in_dir(sj_out_dir, f"{self.outs_dir}/SJ.raw")
 

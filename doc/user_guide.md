@@ -154,7 +154,7 @@ Note that the `./shell/{sample}.sh` must be run under the working directory(You 
   Transcript expression matrix containing only cell barcodes. Generated using [kb-python](https://github.com/pachterlab/kb_python).
 
 - `outs/{sample}_Aligned.sortedByCoord.out.bam`  
-  BAM file containing coordinate-sorted reads aligned to the genome.
+  BAM file containing coordinate-sorted reads aligned to the genome. Read names starting with "5p:" indicate 5-prime reads, while all others are 3-prime reads.
 
 
 ## Seurat CreateSeuratObject
@@ -167,8 +167,3 @@ seurat.object = CreateSeuratObject(matrix, names.delim="-", project="sample_name
 An example can be found at [MARVEL.ipynb](../jupyter/MARVEL.ipynb)
 
 ## [Change log](./CHANGELOG.md)
-
-
-
-
- 

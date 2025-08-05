@@ -17,7 +17,7 @@ If you are unable to use Docker, you can install it using mamba/conda and pip as
 First, you need to get the txt file from the github repository containing the name of the conda package you need to install. You can download it directly from the github repository interface, or use a download link.
 The following command will download the conda_pkgs.txt required for the latest version.
 ```
-wget https://raw.githubusercontent.com/singleron-RD/celescope-mobiu/refs/heads/master/conda_pkgs.txt?token=GHSAT0AAAAAACQ7BHHCKNDZNVI4I6WWVAQ4Z74XZBA
+wget https://raw.githubusercontent.com/singleron-RD/celescope-mobiu/refs/heads/master/conda_pkgs.txt
 ```
 
 Then, start creating the conda environment and install the conda package.It is recommended to use [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html) (which is a faster replacement for Conda) to install conda packages.

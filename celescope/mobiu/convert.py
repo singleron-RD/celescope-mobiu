@@ -16,7 +16,8 @@ class Convert(Step):
         self.fq1_5p = args.fq1_5p.split(",")
         self.fq2_5p = args.fq2_5p.split(",")
 
-        chemistry_version = args.chemistry.split("-")[1]
+        self.chemistry = parse_chemistry.AutoMobiu(self.fq1_3p).get_chemistry()
+        chemistry_version = self.chemistry.split("-")[1]
         chemistry_5p, chemistry_3p = (
             f"mobiu_5p-{chemistry_version}",
             f"mobiu_3p-{chemistry_version}",
@@ -41,7 +42,7 @@ class Convert(Step):
                 for entry1, entry2 in zip(fq1, fq2):
                     name1, seq1, qual1 = entry1.name, entry1.sequence, entry1.quality
                     name2, seq2, qual2 = entry2.name, entry2.sequence, entry2.quality
-                    offset = runner.v4_offset(seq1)
+                    offset = runner.v2_offset(seq1)
                     if offset != -1:
                         seq1 = seq1[offset:]
                         qual1 = qual1[offset:]
@@ -111,8 +112,7 @@ def convert(args):
 def get_opts_convert(parser, sub_program=True):
     parser.add_argument(
         "--chemistry",
-        default="mobiu-1",
-        choices=["mobiu-1", "mobiu-2", "mobiu-3", "mobiu-4"],
+        default="auto",
         help="chemistry version",
     )
     if sub_program:

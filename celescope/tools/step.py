@@ -255,7 +255,9 @@ class Step:
 
     @utils.add_log
     def get_slot_key(self, slot, step_name, key):
-        """read slot from json file"""
+        """read slot from json file
+        slot: 'data' or 'metrics'
+        """
         try:
             return self.__content_dict[slot][step_name + "_summary"][key]
         except KeyError:

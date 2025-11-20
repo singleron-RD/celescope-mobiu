@@ -4,7 +4,7 @@ import shutil
 import numpy as np
 import pandas as pd
 import scipy
-from celescope.tools import utils
+from celescope.tools import parse_chemistry, utils
 from celescope.tools.step import Step, s_common
 import subprocess
 import sys
@@ -40,6 +40,12 @@ def remove_underscore(barcodes_file, outfile):
 class Kb_python(Step):
     def __init__(self, args, display_title=None):
         Step.__init__(self, args, display_title=display_title)
+        chemistry = self.get_slot_key(
+            slot="metrics", step_name="sample", key="Chemistry"
+        )
+        self.pattern_dict, _bc = parse_chemistry.get_pattern_dict_and_bc(
+            chemistry, None, None
+        )
 
         self.kb_whitelist_file = f"{self.outdir}/kb_whitelist.txt"
         remove_underscore(args.barcodes_file, self.kb_whitelist_file)
@@ -70,7 +76,7 @@ class Kb_python(Step):
         )
         cmd = (
             f"kb count -i {self.args.kbDir}/index.idx -g {self.args.kbDir}/t2g.txt "
-            f"-x 0,0,9,0,9,18,0,18,27:0,27,35:1,0,0 "
+            f"-x 0,0,9,0,9,18,0,18,27:0,{self.pattern_dict['U'][0].start},{self.pattern_dict['U'][0].stop}:1,0,0 "
             f"-w {self.kb_whitelist_file} "
             f"-t {self.args.thread} "
             f"-o {self.outdir} --tcc --quant-umis --overwrite "
@@ -147,8 +153,7 @@ def get_opts_kb_python(parser, sub_program):
     )
     parser.add_argument(
         "--chemistry",
-        default="mobiu-1",
-        choices=["mobiu-1", "mobiu-2", "mobiu-3", "mobiu-4"],
+        default="auto",
         help="chemistry version",
     )
     if sub_program:

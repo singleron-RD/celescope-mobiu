@@ -30,6 +30,13 @@ class Multi_mobiu(Multi):
             arr[f"fq2_{col4}"].append(fq2)
         return arr
 
+    def sample(self, sample):
+        step = "sample"
+        arr = self.get_5p3p_fq(sample)
+        cmd_line = self.get_cmd_line(step, sample)
+        cmd = f'{cmd_line} ' f'--fq1 {",".join(arr["fq1_3p"])} '
+        self.process_cmd(cmd, step, sample, m=1, x=1)
+
     def convert(self, sample):
         step = "convert"
         arr = self.get_5p3p_fq(sample)

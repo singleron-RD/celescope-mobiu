@@ -136,8 +136,8 @@ class Starsolo(Step):
         if len(self.fq1_list) != len(self.fq2_list):
             sys.exit("fq1 and fq2 must have same number of files")
 
-        self.chemistry = parse_chemistry.get_chemistry(
-            self.assay, args.chemistry, self.fq1_list
+        self.chemistry = self.get_slot_key(
+            slot="metrics", step_name="sample", key="Chemistry"
         )
         self.pattern_dict, self.bc = parse_chemistry.get_pattern_dict_and_bc(
             self.chemistry, args.pattern, args.whitelist
@@ -475,8 +475,7 @@ class Demultiplexing(Step):
 def get_opts_starsolo(parser, sub_program=True):
     parser.add_argument(
         "--chemistry",
-        default="mobiu-1",
-        choices=["mobiu-1", "mobiu-2", "mobiu-3", "mobiu-4"],
+        default="auto",
         help="chemistry version",
     )
     parser.add_argument(
@@ -528,8 +527,8 @@ is higher than or equal to this value.""",
     )
     parser.add_argument(
         "--soloCBmatchWLtype",
-        help="The same as the argument in STARsolo. Please note `EditDist 2` only works with `--soloType CB UMI Complex`. ",
-        default="1MM",
+        help="The same as the argument in STARsolo. Please note `EditDist_2` only works with `--soloType CB UMI Complex`. ",
+        default="EditDist_2",
     )
 
     if sub_program:

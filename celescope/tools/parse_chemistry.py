@@ -268,13 +268,15 @@ class AutoMobiu(Auto):
         """
         Returns: chemistry or None
         """
-        for chemistry in ["mobiu-1", "mobiu-2", "mobiu-3"]:
+        if self.v2_offset(seq) != -1:
+            return "mobiu-2"
+        for chemistry in ["mobiu_3p-1"]:
             if self.is_chemistry(seq, chemistry):
-                return chemistry
+                return chemistry.replace("_3p", "")
 
-    def v4_offset(self, seq):
+    def v2_offset(self, seq):
         """
-        return -1 if not v4
+        return -1 if not v2
 
         >>> seq = "ATCCAGCTGCTTGAGATC" + "AACGGACCT" + "ACGATG" + "TTGGTGACC" + "CATAGT" + "TTCGGTCAA" + "CATATCAATGGG" + "TTTTTTTTTT"
         >>> runner = AutoMobiu([], "fake_sample")
@@ -314,4 +316,8 @@ def get_pattern_dict_and_bc(
 
 
 def get_chemistry(assay, args_chemistry, fq1_list):
-    return args_chemistry
+    if args_chemistry == "auto":
+        runner = AutoMobiu(fq1_list)
+        return runner.get_chemistry()
+    else:
+        return args_chemistry

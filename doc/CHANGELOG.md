@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.4.1] – 2025-12-02
+- Changed: Use multiprocess in the `convert` step to save time.
+
 ## [1.4.0] – 2025-11-20
 
 - Added: Implemented automatic chemistry detection, enabling the pipeline to infer chemistry types without manual configuration.

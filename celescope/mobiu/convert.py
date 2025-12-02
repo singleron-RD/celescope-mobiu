@@ -2,6 +2,7 @@
 convert 5-prime and 3-prime to the same pattern.
 """
 
+from multiprocessing import Process
 from celescope.tools import utils, parse_chemistry
 from celescope.tools.step import Step, s_common
 import pysam
@@ -98,9 +99,14 @@ class Convert(Step):
                     fh_r2.write(utils.fastq_line(P5_PREFIX + name2, seq2, qual2))
         fh_r2.close()
 
+    @utils.add_log
     def run(self):
-        self.write_3p()
-        self.write_5p()
+        p1 = Process(target=self.write_3p)
+        p2 = Process(target=self.write_5p)
+        p1.start()
+        p2.start()
+        p1.join()
+        p2.join()
 
 
 @utils.add_log

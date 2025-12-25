@@ -220,36 +220,47 @@ class Starsolo(Step):
             Counter(),
         )
         n = 0
-        with pysam.FastxFile(fq1_list[0], persist=False) as fq1:
-            for entry in fq1:
-                n += 1
-                if n > 10**5:
-                    break
-                qual: str = entry.quality
-                cb_qual = "".join([qual[slice] for slice in pattern_dict["C"]])
-                umi_qual = "".join([qual[slice] for slice in pattern_dict["U"]])
-                if n <= 10**4:
-                    cb_10k.update(cb_qual)
-                    umi_10k.update(umi_qual)
-                else:
-                    cb_10k_100k.update(cb_qual)
-                    umi_10k_100k.update(umi_qual)
+        for fn1 in fq1_list:
+            with pysam.FastxFile(fn1, persist=False) as fq1:
+                for entry in fq1:
+                    n += 1
+                    if n > 10**5:
+                        break
+                    qual: str = entry.quality
+                    cb_qual = "".join([qual[slice] for slice in pattern_dict["C"]])
+                    umi_qual = "".join([qual[slice] for slice in pattern_dict["U"]])
+                    if n <= 10**4:
+                        cb_10k.update(cb_qual)
+                        umi_10k.update(umi_qual)
+                    else:
+                        cb_10k_100k.update(cb_qual)
+                        umi_10k_100k.update(umi_qual)
 
         cb_qual_counter = cb_10k
         umi_qual_counter = umi_10k
         if cb_10k_100k:
             cb_qual_counter = cb_10k_100k
             umi_qual_counter = umi_10k_100k
-        q30_cb = sum(
-            [cb_qual_counter[k] for k in cb_qual_counter if Barcode.chr_to_int(k) >= 30]
-        ) / float(sum(cb_qual_counter.values()))
-        q30_umi = sum(
-            [
-                umi_qual_counter[k]
-                for k in umi_qual_counter
-                if Barcode.chr_to_int(k) >= 30
-            ]
-        ) / float(sum(umi_qual_counter.values()))
+        if not cb_qual_counter:
+            q30_cb = 0.0
+        else:
+            q30_cb = sum(
+                [
+                    cb_qual_counter[k]
+                    for k in cb_qual_counter
+                    if Barcode.chr_to_int(k) >= 30
+                ]
+            ) / float(sum(cb_qual_counter.values()))
+        if not umi_qual_counter:
+            q30_umi = 0.0
+        else:
+            q30_umi = sum(
+                [
+                    umi_qual_counter[k]
+                    for k in umi_qual_counter
+                    if Barcode.chr_to_int(k) >= 30
+                ]
+            ) / float(sum(umi_qual_counter.values()))
         return q30_cb, q30_umi
 
     def run(self):

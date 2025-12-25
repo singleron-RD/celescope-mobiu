@@ -17,10 +17,9 @@ class Convert(Step):
         self.fq1_5p = args.fq1_5p.split(",")
         self.fq2_5p = args.fq2_5p.split(",")
 
-        if args.chemistry != "auto":
-            self.chemistry = args.chemistry
-        else:
-            self.chemistry = parse_chemistry.AutoMobiu(self.fq1_3p).get_chemistry()
+        self.chemistry = parse_chemistry.get_chemistry(
+            self.assay, self.args.chemistry, self.fq1_3p
+        )
         chemistry_version = self.chemistry.split("-")[1]
         chemistry_5p, chemistry_3p = (
             f"mobiu_5p-{chemistry_version}",

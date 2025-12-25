@@ -1,6 +1,6 @@
 import os
 
-__VERSION__ = "1.4.1"
+__VERSION__ = "1.4.2"
 __version__ = __VERSION__
 
 ASSAY_LIST = ["mobiu", "rna"]
